@@ -1,0 +1,130 @@
+<div *ngIf="loaded" class="wrapper">
+  <!-- card wrapper for raspberry interface -->
+  <mat-card class="cardWrap">
+    <mat-grid-list cols="2" rowHeight="32px">
+
+      <mat-grid-tile class="recordAction" rowspan="3">
+        <section class="recordIOSec">
+          <!-- selector for input voice (eng/ger) -->
+          <mat-form-field appearance="fill">
+            <mat-label>Input Language</mat-label>
+            <mat-select [(value)]="selectedInputLang" (selectionChange)="onSelectionChange($event.value, 'in')">
+              <mat-option *ngFor="let lang of availableLang" [value]="lang">
+                {{lang == 'en' ? 'English' : 'Deutsch'}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
+            <mat-label>Output Language</mat-label>
+              <mat-select [(value)]="selectedOutputLang" (selectionChange)="onSelectionChange($event.value, 'out')">
+                <mat-option *ngFor="let lang of availableLang" [value]="lang">
+                  {{lang == 'en' ? 'English' : 'Deutsch'}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+
+
+          <!-- btn for starting & btn for ending recording, deleting all recorded files -->
+          <section class="recordingBtnSec">
+            <button mat-mini-fab class="recordBtn" [ngClass]="{'backgroundGreen': !recordingBool, 'backgroundRed': recordingBool}" (click)="onRecording()" [disabled] = "!selectedInputLang && !selectedOutputLang">
+              <mat-icon>{{recordingBool ? 'mic_off' : 'mic'}}</mat-icon>
+            </button>
+
+            <button class="playBtn" mat-mini-fab color="primary" (click)="onPlayback()" [disabled] = "!recordingFinished">
+              <mat-icon>{{playbackBool ? 'pause' : 'play_arrow'}}</mat-icon>
+            </button>
+
+            <button class="deleteRecBtn" mat-mini-fab color="warn" (click)="onDeleteRecordings()">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </section>
+        </section>
+      </mat-grid-tile>
+
+
+      <mat-grid-tile class="translateAction" rowspan="3">
+        <section class="translateIOSec">
+          <!-- selector for all recorded audio files -->
+          <mat-form-field appearance="fill">
+            <mat-label>Select Recording for Translation</mat-label>
+            <mat-select [(value)]="selectedRecForTransl" (selectionChange)="onAudioSelectionChange($event.value)">
+              <mat-option *ngFor="let recordingFileName of availableRecordingFilenames" [value]="recordingFileName">
+                {{recordingFileName}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+
+          <!-- btns
+            fetch recordings
+            translate selected recording & display text below
+            delete all translation files
+          -->
+          <section class="translBtnSec">
+            <button mat-mini-fab class="fetchRecFilenamesBtn" color="primary" (click)="onFetchRecordings()" [disabled]="recordingAction">
+              <mat-icon>{{fetchingRecordingsBool ? 'cloud_done' : 'cloud_download'}}</mat-icon>
+            </button>
+
+            <button class="playBtn" mat-mini-fab color="primary" (click)="onPlayback(selectedRecForTransl)" [disabled] = "selectedRecForTransl === '' || recordingAction || (!fetchingRecordingsBool && !selectedRecForTransl)">
+              <mat-icon>{{playbackBool ? 'pause' : 'play_arrow'}}</mat-icon>
+            </button>
+
+            <button class="translateSelectedRecBtn" mat-mini-fab color="accent" (click)="onTranslate(selectedRecForTransl)" [disabled] = "recordingAction || translatingBool || !selectedRecForTransl">
+              <mat-icon>{{translatingBool ? 'cached' : 'g_translate'}}</mat-icon>
+            </button>
+
+            <button class="deleteTranslBtn" mat-mini-fab color="warn" (click)="onDeleteTranslations()" [disabled]="recordingAction">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </section>
+        </section>
+
+
+
+      </mat-grid-tile>
+
+      <mat-grid-tile class="recordDisplay" rowspan="10">
+        <mat-card *ngIf="!translatingBool" class="textAreaCard">
+          <mat-card-header>
+            <mat-card-title>Recognized Text in Speech Analysis</mat-card-title>
+            <mat-card-subtitle>{{sourceLang}}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>{{sourceText}}</mat-card-content>
+
+          <mat-card-actions *ngIf="sourceText">
+            <button class="playBtn" mat-mini-fab color="accent" (click)="onPlaybackTTS('source')">
+              <mat-icon>{{playbackTTSsourceBool ? 'pause' : 'play_arrow'}}</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+
+        <mat-spinner [diameter]="75" *ngIf="translatingBool"></mat-spinner>
+      </mat-grid-tile>
+
+
+      <mat-grid-tile class="translateDisplay" rowspan="10">
+        <mat-card *ngIf="!translatingBool" class="textAreaCard">
+          <mat-card-header>
+            <mat-card-title>Translation from Recognized Text</mat-card-title>
+            <mat-card-subtitle>{{translatedLang}}</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>{{translatedText}}</mat-card-content>
+
+          <mat-card-actions *ngIf="translatedText">
+            <button class="playBtn" mat-mini-fab color="accent" (click)="onPlaybackTTS('translation')">
+              <mat-icon>{{playbackTTStranslationBool ? 'pause' : 'play_arrow'}}</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+
+
+        <mat-spinner [diameter]="75" color="accent" *ngIf="translatingBool"></mat-spinner>
+      </mat-grid-tile>
+    </mat-grid-list>
+  </mat-card>
+</div>
